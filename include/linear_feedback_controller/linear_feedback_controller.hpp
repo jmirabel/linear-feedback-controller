@@ -88,7 +88,7 @@ class LinearFeedbackController {
   RobotModelBuilder::SharedPtr robot_model_builder_;
   /// @brief A simple PD controller to hold the robot still at the beginning.
   PDController pd_controller_;
-  /// @brief A simple PD controller to hold the robot still at the beginning.
+  /// @brief The actual linear feedback controller.
   LFController lf_controller_;
   /// @brief Smoother for the switch between the PD and the LFC.
   MinJerk min_jerk_;
