@@ -515,6 +515,8 @@ bool LinearFeedbackControllerRos::load_linear_feedback_controller(
   lfc_params.robot_has_free_flyer = parameters_.robot_has_free_flyer;
   lfc_params.pd_to_lf_transition_duration =
       Duration(parameters_.pd_to_lf_transition_duration);
+  lfc_params.state_compensation_gain = parameters_.state_compensation_gain;
+  lfc_params.controller = parameters_.controller;
   return lfc_.load(lfc_params);
 }
 

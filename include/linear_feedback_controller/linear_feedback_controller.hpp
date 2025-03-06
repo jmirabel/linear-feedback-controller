@@ -11,6 +11,7 @@
 
 // local include
 #include "linear_feedback_controller/lf_controller.hpp"
+#include "linear_feedback_controller/state_compensation_controller.hpp"
 #include "linear_feedback_controller/min_jerk.hpp"
 #include "linear_feedback_controller/pd_controller.hpp"
 #include "linear_feedback_controller/robot_model_builder.hpp"
@@ -26,6 +27,8 @@ struct ControllerParameters {
   std::vector<std::string> controlled_joint_names;
   bool robot_has_free_flyer;
   Duration pd_to_lf_transition_duration;
+  std::vector<double> state_compensation_gain;
+  std::string controller = "linear_feedback";
 };
 
 /**
@@ -80,6 +83,13 @@ class LinearFeedbackController {
   RobotModelBuilder::ConstSharedPtr get_robot_model() const;
 
  private:
+  const Eigen::VectorXd& call_internal_controller(const Sensor& sensor, const Control& control);
+
+   enum {
+    StateCompensation,
+    LinearFeedback,
+   } controller_type_;
+   
   ControllerParameters params_; /*! @brief Parameters of the controller. */
   /// @brief Control to be sent to the low-level controller.
   Eigen::VectorXd control_;
@@ -90,6 +100,8 @@ class LinearFeedbackController {
   PDController pd_controller_;
   /// @brief The actual linear feedback controller.
   LFController lf_controller_;
+  /// @brief The state compensation controller.
+  StateCompensationController sc_controller_;
   /// @brief Smoother for the switch between the PD and the LFC.
   MinJerk min_jerk_;
   /// @brief Time at which we received the first control.

@@ -20,14 +20,32 @@ bool LinearFeedbackController::load(const ControllerParameters& params) {
     return false;
   }
 
+  if (params.controller == "state_compensation") {
+    controller_type_ = StateCompensation;
+  } else if (params.controller == "linear_feedback") {
+    controller_type_ = LinearFeedback;
+  } else {
+    return false;
+  }
   // Min jerk to smooth the control when we switch from pd to lfc.
   min_jerk_.set_parameters(params_.pd_to_lf_transition_duration.count(), 1.0);
 
   // Setup the pd controller.
   pd_controller_.set_gains(params_.p_gains, params_.d_gains);
 
+  switch (controller_type_) {
+  case StateCompensation:
+    // Setup the state compensation controller.
+    sc_controller_.initialize(robot_model_builder_,
+                              params.state_compensation_gain);
+    break;
+  case LinearFeedback:
   // Setup the lfc controller.
   lf_controller_.initialize(robot_model_builder_);
+    break;
+    default:
+    throw std::logic_error("Controller type not set");
+  }
 
   // Allocate memory
   robot_configuration_ = Eigen::VectorXd::Zero(robot_model_builder_->get_nq());
@@ -70,12 +88,11 @@ const Eigen::VectorXd& LinearFeedbackController::compute_control(
     weight = std::clamp(weight, 0.0, 1.0);
     const Eigen::VectorXd& pd_ctrl =
         pd_controller_.compute_control(sensor_js.position, sensor_js.velocity);
-    const Eigen::VectorXd& lf_ctrl =
-        lf_controller_.compute_control(sensor, control);
+    const Eigen::VectorXd& lf_ctrl = call_internal_controller(sensor, control);
 
     control_ = (1.0 - weight) * pd_ctrl + weight * lf_ctrl;
   } else {
-    control_ = lf_controller_.compute_control(sensor, control);
+    control_ = call_internal_controller(sensor, control);
   }
 
   if (remove_gravity_compensation_effort) {
@@ -91,6 +108,22 @@ const Eigen::VectorXd& LinearFeedbackController::compute_control(
   }
 
   return control_;
+}
+
+const Eigen::VectorXd &
+LinearFeedbackController::call_internal_controller(const Sensor &sensor,
+                                                   const Control &control) {
+  switch (controller_type_) {
+  case StateCompensation:
+    return sc_controller_.compute_control(sensor, control);
+
+  case LinearFeedback:
+    return lf_controller_.compute_control(sensor, control);
+
+  default:
+    throw std::logic_error("Controller type not set");
+    break;
+  }
 }
 
 RobotModelBuilder::ConstSharedPtr LinearFeedbackController::get_robot_model()

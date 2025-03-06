@@ -53,7 +53,8 @@ set(${PROJECT_NAME}_headers
     include/${PROJECT_NAME}/linear_feedback_controller_ros.hpp
     include/${PROJECT_NAME}/min_jerk.hpp
     include/${PROJECT_NAME}/pd_controller.hpp
-    include/${PROJECT_NAME}/robot_model_builder.hpp)
+    include/${PROJECT_NAME}/robot_model_builder.hpp
+    include/${PROJECT_NAME}/state_compensation_controller.hpp)
 set(${PROJECT_NAME}_sources
     src/joint_state_estimator.cpp #
     src/lf_controller.cpp #
@@ -61,7 +62,8 @@ set(${PROJECT_NAME}_sources
     src/linear_feedback_controller_ros.cpp #
     src/min_jerk.cpp #
     src/pd_controller.cpp #
-    src/robot_model_builder.cpp)
+    src/robot_model_builder.cpp
+    src/state_compensation_controller.cpp)
 ament_auto_add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources}
                        ${${PROJECT_NAME}_headers})
 target_link_libraries(${PROJECT_NAME} pinocchio::pinocchio)

@@ -23,6 +23,12 @@ linear_feedback_controller:
       lt_eq<>: 1.0,
     }
   }
+  controller:
+    type: string
+    description: "Name of the controller to use."
+    default_value: "linear_feedback"
+    validation:
+      one_of<>: [[ "linear_feedback", "state_compensation" ]]
   moving_joint_names: {
     type: string_array,
     description: "list of active joint names used by the controller.",
@@ -51,3 +57,12 @@ linear_feedback_controller:
       gt_eq<>: 0.0
     }
   }
+  state_compensation_gain: {
+    type: double_array,
+    description: "Gain of the state compensation controller. It acts on the state (q,v) difference.",
+    default_value: [],
+    validation: {
+      lower_element_bounds<>: 0.0
+    }
+  }
+
